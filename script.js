@@ -18,35 +18,43 @@ usersComments = []
 
 //Редактирование и добавление комментария
 function getComments () {
-  const fetchPromise = fetch("https://webdev-hw-api.vercel.app/api/v1/anna-makhortova/comments", {
+loadrComments()
+  return fetch("https://webdev-hw-api.vercel.app/api/v1/anna-makhortova/comments", {
     method: "GET"
-  });
-  fetchPromise.then((response) => {
-    const jsonPromise = response.json();
-    jsonPromise.then((responseData) => {
-      usersComments = responseData.comments.map((comment) => {
-        return {
-          name: comment.author.name,
-          date: new Date(comment.date),
-          text: comment.text,
-          likes: comment.likes,
-          isLiked: comment.isLiked
-        }
-      });
-      loadedComment = false
-      renderForm(loadedComment)
-      renderComments();
-    });
-  });
-}
+  }).then((response) => {
+    if (response.status === 200) {
+      return response.json()
+    } if (response.status === 500) {
+      return Promise.reject(new Error("произошел сбой сервера"))
+    } else {
+      return Promise.reject(new Error("неизвестная ошибка"))
+    }
+  }).then((responseData) => {
+    usersComments = responseData.comments.map((comment) => {
 
-function addNewComment() {
-  const dateNow = new Date();
-let loadedComment = true
-renderForm(loadedComment)
-fetch("https://webdev-hw-api.vercel.app/api/v1/anna-makhortova/comments", {
+   return {
+        name: comment.author.name,
+        date: new Date(comment.date),
+        text: comment.text,
+        likes: comment.likes,
+        isLiked: comment.isLiked,
+      }
+    })
+    loadedComment = false
+    renderForm(loadedComment)
+    renderComments();
+  }).catch((error) => {
+    alert(error)
+    loadedComment = false
+    renderForm(loadedComment)
+    });
+  }
+
+function postComments () {
+  return fetch("https://webdev-hw-api.vercel.app/api/v1/anna-makhortova/comments", {
 method: "POST",
 body: JSON.stringify({
+  forceError: false,
 "text": newComment.value.replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -58,15 +66,42 @@ body: JSON.stringify({
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;"),
 })}).then((response) => {
-  response.json().then((responseData) => {
-    getComments()
-      renderComments();
+  if (response.status === 201) {
+    return response.json()
+  } if (response.status === 400 || newComment.value.length < 3 && newName.value.length < 3) {
+    return Promise.reject(new Error("Имя или комментарий слишком короткие"))
+  } if (response.status === 500) {
+    return Promise.reject(new Error("произошел сбой сервера"))
+  } else {
+    console.log(response.status)
+    return Promise.reject(new Error("неизвестная ошибка"))
+  }
+}).then((responseData) => {
+  getComments()
+  cleareInputs()
+    renderComments();
+}).catch((error) => {
+  alert(error.message)
+  loadedComment = false
+  renderForm(loadedComment)
+  if (error.message === "произошел сбой сервера") {
+    postComments()
+  } if (error.message === 'Failed to fetch') {
+    alert('Похоже интернет не работает, попробуйте позже')
+  } else {
+    alert(error.message)
+  }
+});
+}
 
-  })
-})
-    cleareInputs()
-      renderComments()
-      commentClickListener()
+
+function addNewComment() {
+  const dateNow = new Date();
+  let loadedComment = true
+    renderForm(loadedComment)
+    postComments()
+    renderComments()
+    commentClickListener()
 }
 
 getComments()
@@ -93,7 +128,7 @@ function formatDate(date) {
 function cleareInputs () {
   newName.value = ''
   newComment.value = ''
-  addButton.setAttribute('disabled', 'disabled')
+  //addButton.setAttribute('disabled', 'disabled')
 }
 
 
@@ -102,19 +137,20 @@ function cleareInputs () {
 
 
 //ответ-комментарий
+
 const commentClickListener = () => {
+  
+  const boxOfCommentsTexts = boxOfComments.querySelectorAll('.comment')
 
-    const boxOfCommentsTexts = boxOfComments.querySelectorAll('.comment')
-
-    for (const comment of boxOfCommentsTexts) {
-      comment.addEventListener('click', () => {
-        newComment.setAttribute('style', 'white-space: pre-line;');
-        const replace = `${usersComments[comment.dataset.id].text} \r\n \r\n ${usersComments[comment.dataset.id].name}`
-        newComment.value = `| ${replace} \r\n\|`
-      })
-    }
-    commentClickListener()
+  for (const comment of boxOfCommentsTexts) {
+    comment.addEventListener('click', () => {
+      newComment.setAttribute('style', 'white-space: pre-line;');
+      const replace = `${usersComments[comment.dataset.id].text} \r\n \r\n ${usersComments[comment.dataset.id].name}`
+      newComment.value = `| ${replace} \r\n\|`
+    })
+  }
 }
+
 
 const initEventListeners = () => {
 
@@ -123,34 +159,27 @@ const likeButtons = document.querySelectorAll('.likes');
   for (const likeButton of likeButtons) {
     likeButton.addEventListener('click', (e) => {
       e.stopPropagation()
-      const comment = usersComments[e.target.dataset.id];
-        if (comment.isLiked) {
-          delLikes(e);
-        } else {
-          addLikes(e);
-        }
-
-       renderComments();
-})
-
+      AddLikeOrDelLike(e)
+    })  
+  } 
 }
-newName.addEventListener('input', function () {
-    if (newName.value.length < 2 || newComment.value.length < 5) {
-        addButton.setAttribute('disabled', 'disabled')
-    }
-    else{
-        addButton.removeAttribute('disabled')
-    }
-});
+//newName.addEventListener('input', function () {
+//    if (newName.value.length < 2 || newComment.value.length < 5) {
+//        addButton.setAttribute('disabled', 'disabled')
+//    }
+//    else{
+//        addButton.removeAttribute('disabled')
+ //   }
+//});
 
-newComment.addEventListener('input', function () {
-    if (newName.value.length < 2 || newComment.value.length < 5) {
-        addButton.setAttribute('disabled', 'disabled')
-    }
-    else{
-        addButton.removeAttribute('disabled')
-    }
-});
+//newComment.addEventListener('input', function () {
+//    if (newName.value.length < 2 || newComment.value.length < 5) {
+//        addButton.setAttribute('disabled', 'disabled')
+//    }
+//    else{
+//        addButton.removeAttribute('disabled')
+//    }
+//});
 
 
 addButton.addEventListener('click', addNewComment)
@@ -169,6 +198,40 @@ delButton.addEventListener('click', function () {
     usersComments.pop()
 })
 
+
+
+
+//Главная
+function loadrComments () {
+  boxOfComments.innerHTML = `<li class=" comment comment_loader loading">
+<div class="comment-header comment__header_loader">
+<div class="animated-background  comment__name_loader">
+</div>
+<div class="animated-background  comment__date_loader">
+</div>
+</div>
+<div class="animated-background  comment-body comment__body_loader">
+</div>
+<div class="likes likes_loader">
+<div class="animated-background  likes__counter_loader"></div>
+<div class="animated-background  like__button_loader"></div>
+</div>
+</li>
+<li class=" comment comment_loader loading">
+<div class="comment-header comment__header_loader">
+<div class="animated-background  comment__name_loader">
+</div>
+<div class="animated-background  comment__date_loader">
+</div>
+</div>
+<div class="animated-background  comment-body comment__body_loader">
+</div>
+<div class="likes likes_loader">
+<div class="animated-background  likes__counter_loader"></div>
+<div class="animated-background  like__button_loader"></div>
+</div>
+</li>`
+}
 
 
 
@@ -196,7 +259,7 @@ const renderComments = () => {
         <div class="comment-footer">
           <div class="likes">
             <span class="likes-counter">${comment.likes}</span>
-            <button class="like-button ${isLiked}" data-id="${id}"></button>
+            <button class=" like-button ${isLiked}" data-id="${id}"></button>
           </div>
         </div>
       </li>`;
@@ -205,7 +268,8 @@ const renderComments = () => {
       boxOfComments.innerHTML = commentsHtml;
       initEventListeners();
     };
-    renderComments()
+   
+    
 
     function renderForm(loadedComment) {
       if (loadedComment == true){
@@ -221,12 +285,24 @@ const renderComments = () => {
 
 
 //Лайки
-const addLikes = (e) => {
-    usersComments[e.target.dataset.id].likes = Number(usersComments[e.target.dataset.id].likes) + 1;
-    usersComments[e.target.dataset.id].isLiked  = true;
+function delay(interval = 300) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, interval);
+  });
 }
 
-const delLikes = (e) => {
-    usersComments[e.target.dataset.id].likes = Number(usersComments[e.target.dataset.id].likes) - 1;
-    usersComments[e.target.dataset.id].isLiked = false;
+function AddLikeOrDelLike (e) {
+  e.target.classList.add('loading-like')
+    const comment = usersComments[e.target.dataset.id];
+    delay(2000).then(() => {
+      comment.likes = comment.isLiked
+        ? comment.likes - 1
+        : comment.likes + 1;
+      comment.isLiked = !comment.isLiked;
+      comment.isLikeLoading = false;
+      e.target.classList.remove('loading-like')
+      renderComments();
+    });
   }
