@@ -1,5 +1,5 @@
 import { addButton } from "./comments.js";
-import { allComments, postCommentss, userData} from "./api.js";
+import { allComments, postComments, userData} from "./api.js";
 import { renderComments, renderForm} from "./renderComments.js";
 import { commentClickListener } from "./listeners.js";
 
@@ -50,7 +50,7 @@ function delay(interval = 300) {
 }
 
 function addNewComment() {
-  let newComment = document.querySelector('.add-form-text') 
+  let newComment = document.querySelector('.add-form-text')
   let date = new Date();
     let loadedComment = true
     renderForm(loadedComment)
