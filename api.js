@@ -1,9 +1,10 @@
+// import { newName , newComment} from "./comments.js";
 import { listenersOfForm} from "./listeners.js";
 import { renderComments, renderLoaderComments, renderForm, renderInputs, canLogined } from "./renderComments.js";
 import { cleareInputs} from "./utilis.js";
 
 
-
+// let logined = false
 let allComments = []
 let userData = []
 
@@ -41,9 +42,9 @@ function getComments (userData) {
         });
       }
 
-      getComments(newComment)
+      getComments()
     
-    function postComments () {
+    function postComments (newComment) {
       return fetch("https://wedev-api.sky.pro/api/v2/anna-makhortova/comments", {
     method: "POST",
     headers: {
