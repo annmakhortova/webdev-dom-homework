@@ -8,6 +8,7 @@ import { cleareInputs} from "./utilis.js";
 let allComments = []
 let userData = []
 
+
 function getComments (userData) {
     renderLoaderComments()
     return fetch("https://wedev-api.sky.pro/api/v2/anna-makhortova/comments", {
@@ -168,3 +169,4 @@ function getComments (userData) {
     
     export {allComments, postComments, userData}
     
+
