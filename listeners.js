@@ -17,7 +17,6 @@ let commentClickListener = () => {
   }
 }
 
-
 let initEventListeners = () => {
 
 let likeButtons = document.querySelectorAll('.likes');
