@@ -1,13 +1,14 @@
 import { commentClickListener, initEventListeners, listenerHref, listenersOfForm } from "./listeners.js";
 import { allComments, userData} from "./api.js";
+
 import { format } from "./node_modules/date-fns"
 
-let token = ""
+let tok = ""
 let logined = ""
 let boxOfComments = document.querySelector('.comments');
 
-export function canLogined(token) {
-  if (!token) {
+export function canLogined(tok) {
+  if (!tok) {
     logined = false
     return logined
   }
@@ -16,7 +17,7 @@ export function canLogined(token) {
     return logined
   }
 }
-canLogined(token)
+canLogined(tok)
 
 let renderComments = () => {
     let commentsHtml = allComments
@@ -48,6 +49,7 @@ let renderComments = () => {
       .join("");
       boxOfComments.innerHTML = commentsHtml;
       initEventListeners();
+      commentClickListener()
     };
    
 
@@ -165,7 +167,6 @@ let renderComments = () => {
       let addForm = document.querySelector('.add-form')
       let loader = document.querySelector('.loader');
 
-
       function renderForm(loadedComment) {
         if (loadedComment == true){
           addForm.classList.add('hide')
@@ -176,5 +177,6 @@ let renderComments = () => {
         }
       }
 
-      
+
+  
 export {renderComments, renderLoaderComments, renderForm, renderRegForm}
