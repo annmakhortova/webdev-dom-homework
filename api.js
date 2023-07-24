@@ -73,7 +73,7 @@ function getComments (userData) {
       }
     }).then((responseData) => {
       getComments()
-      cleareInputs()
+      cleareInputs(newComment)
         renderComments();
         renderInputs()
     }).catch((error) => {
