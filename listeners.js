@@ -92,7 +92,7 @@ function listenerOfAutoriz() {
       loginUserButton.removeAttribute('disabled')
     }
     else{
-      loginUserButton.setAttribute('disabled','disabled')
+      loginUserButton.setAttribute('disabled', 'disabled')
     }
 })
 
